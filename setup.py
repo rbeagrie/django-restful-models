@@ -9,5 +9,5 @@ setup(name='xml_models',
       author_email='chris@pyruby.com',
       url='http://djangorestmodel.sourceforge.net/',
       packages=['rest_client', 'xml_models', 'json_models','common_models'],
-      install_requires=['mock', 'py-dom-xpath']
+      install_requires=['mock', 'py-dom-xpath-six']
      )
