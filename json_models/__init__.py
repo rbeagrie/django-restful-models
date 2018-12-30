@@ -1,1 +1,1 @@
-from json_models import *
+from .json_models import *

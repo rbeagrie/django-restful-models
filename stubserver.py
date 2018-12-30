@@ -25,13 +25,13 @@ The views and conclusions contained in the software and documentation are those 
 authors and should not be interpreted as representing official policies, either expressed
 or implied, of the FreeBSD Project.
 """
-import BaseHTTPServer, cgi, threading, re, urllib, httplib
-import unittest, urllib, urllib2, time
+import http.server, cgi, threading, re, urllib.request, urllib.parse, urllib.error, http.client
+import unittest, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, time
 from unittest import TestCase
 import sys
 
 
-class StoppableHTTPServer(BaseHTTPServer.HTTPServer):
+class StoppableHTTPServer(http.server.HTTPServer):
     """Python 2.5 HTTPServer does not close down properly when calling server_close.
     The implementation below was based on the comments in the below article:-
     http://stackoverflow.com/questions/268629/how-to-stop-basehttpserver-serveforever-in-a-basehttprequesthandler-subclass
@@ -40,28 +40,28 @@ class StoppableHTTPServer(BaseHTTPServer.HTTPServer):
     allow_reuse_address = True
 
     def __init__(self, *args, **kw):
-        BaseHTTPServer.HTTPServer.__init__(self, *args, **kw)
+        http.server.HTTPServer.__init__(self, *args, **kw)
 
     def serve_forever(self):
         while not self.stopped:
             self.handle_request()
 
     def server_close(self):
-        BaseHTTPServer.HTTPServer.server_close(self)
+        http.server.HTTPServer.server_close(self)
         self.stopped = True
         self._create_dummy_request()
 
     def _create_dummy_request(self):
-        f = urllib.urlopen("http://localhost:" + str(self.server_port) + "/__shutdown")
+        f = urllib.request.urlopen("http://localhost:" + str(self.server_port) + "/__shutdown")
         f.read()
         f.close()
 
 
 if sys.version_info[0] == 2 and sys.version_info[1] < 6:
     HTTPServer = StoppableHTTPServer
-    print "Using stoppable server"
+    print("Using stoppable server")
 else:
-    HTTPServer = BaseHTTPServer.HTTPServer
+    HTTPServer = http.server.HTTPServer
 
 
 class StubServer(object):
@@ -119,14 +119,14 @@ class Expectation(object):
     def __str__(self):
         return self.method + ":" + self.url
 
-class StubResponse(BaseHTTPServer.BaseHTTPRequestHandler):
+class StubResponse(http.server.BaseHTTPRequestHandler):
 
     def __init__(self, request, clientaddress, parent):
         self.expected = StubServer._expectations
-        BaseHTTPServer.BaseHTTPRequestHandler.__init__(self, request, clientaddress, parent)
+        http.server.BaseHTTPRequestHandler.__init__(self, request, clientaddress, parent)
 
     def _get_data(self):
-        if self.headers.has_key("content-length"):
+        if "content-length" in self.headers:
             size_remaining = int(self.headers["content-length"])
             return self._read_chunk(size_remaining)
         elif self.headers.get('Transfer-Encoding', "") == "chunked":
@@ -231,9 +231,9 @@ class WebTest(TestCase):
         self.server.verify()
 
     def _make_request(self, url, method="GET", payload="", headers={}):
-        self.opener = urllib2.OpenerDirector()
-        self.opener.add_handler(urllib2.HTTPHandler())
-        request = urllib2.Request(url, headers=headers, data=payload)
+        self.opener = urllib.request.OpenerDirector()
+        self.opener.add_handler(urllib.request.HTTPHandler())
+        request = urllib.request.Request(url, headers=headers, data=payload)
         request.get_method = lambda: method
         response = self.opener.open(request)
         response_code = getattr(response, 'code', -1)
@@ -247,7 +247,7 @@ class WebTest(TestCase):
         response, response_code = self._make_request("http://localhost:8998/address/25", method="GET")
         expected = open("./data.txt", "r").read()
         try:
-            self.assertEquals(expected, response.read())
+            self.assertEqual(expected, response.read())
         finally:
             response.close()
 
@@ -256,25 +256,25 @@ class WebTest(TestCase):
         self.server.expect(method="PUT", url="/address/\d+$", data_capture=capture).and_return(reply_code=201)
         f, reply_code = self._make_request("http://localhost:8998/address/45", method="PUT", payload=str({"hello": "world", "hi": "mum"}))
         try:
-            self.assertEquals("", f.read())
+            self.assertEqual("", f.read())
             captured = eval(capture["body"])
-            self.assertEquals("world", captured["hello"])
-            self.assertEquals("mum", captured["hi"])
-            self.assertEquals(201, reply_code)
+            self.assertEqual("world", captured["hello"])
+            self.assertEqual("mum", captured["hi"])
+            self.assertEqual(201, reply_code)
         finally:
             f.close()
 
     def test_post_with_data_and_no_body_response(self):
         self.server.expect(method="POST", url="address/\d+/inhabitant", data='<inhabitant name="Chris"/>').and_return(reply_code=204)
         f, reply_code = self._make_request("http://localhost:8998/address/45/inhabitant", method="POST", payload='<inhabitant name="Chris"/>')
-        self.assertEquals(204, reply_code)
+        self.assertEqual(204, reply_code)
 
     def test_get_with_data(self):
         self.server.expect(method="GET", url="/monitor/server_status$").and_return(content="<html><body>Server is up</body></html>", mime_type="text/html")
         f, reply_code = self._make_request("http://localhost:8998/monitor/server_status", method="GET")
         try:
             self.assertTrue("Server is up" in f.read())
-            self.assertEquals(200, reply_code)
+            self.assertEqual(200, reply_code)
         finally:
             f.close()
 

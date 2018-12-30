@@ -29,7 +29,7 @@ or implied, of the FreeBSD Project.
 
 __doc__="A REST client, supporting GET, PUT, POST and DELETE"
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 class Client(object):
     """ 
@@ -56,23 +56,23 @@ class Client(object):
     def _install_creds(self, base_url, credentials):
         if credentials[0] and credentials[1]:
             user, passwd = credentials
-            pwm = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            pwm = urllib.request.HTTPPasswordMgrWithDefaultRealm()
             pwm.add_password(None, base_url, user, passwd)
-            handler = urllib2.HTTPBasicAuthHandler(pwm)
-            handler.set_parent(urllib2.HTTPHandler())
+            handler = urllib.request.HTTPBasicAuthHandler(pwm)
+            handler.set_parent(urllib.request.HTTPHandler())
             self.opener = handler.build_opener()
         else:
-            self.opener = urllib2.OpenerDirector()
-            self.opener.add_handler(urllib2.HTTPHandler())
-            self.opener.add_handler(urllib2.HTTPSHandler())
+            self.opener = urllib.request.OpenerDirector()
+            self.opener.add_handler(urllib.request.HTTPHandler())
+            self.opener.add_handler(urllib.request.HTTPSHandler())
     
     def _make_request(self, url, method, payload, headers):
-        request = urllib2.Request(self.base_url + url, headers=headers, data=payload)
+        request = urllib.request.Request(self.base_url + url, headers=headers, data=payload)
         request.get_method = lambda: method
         response = self.opener.open(request)
         response_code = getattr(response, 'code', -1)
         if response_code == -1:
-            raise urllib2.HTTPError(url, response_code, "Error accessing external resource", None, None)
+            raise urllib.error.HTTPError(url, response_code, "Error accessing external resource", None, None)
         return Response(self.base_url + url, response_code, response.headers, response)
         
 class Response(object):
@@ -92,10 +92,10 @@ class Response(object):
     def expect(self, response_code):
         "If the actual response code does not match the expected response code, raises a HTTPError"
         if self.response_code != response_code:
-            raise urllib2.HTTPError(self.url, self.response_code, "Expected response code: %s, but was %s" % (response_code, self.response_code), None, None)
+            raise urllib.error.HTTPError(self.url, self.response_code, "Expected response code: %s, but was %s" % (response_code, self.response_code), None, None)
         
     def __getattr__(self, attr_name):
-        if self.headers.has_key(attr_name):
+        if attr_name in self.headers:
             return self.headers[attr_name]
         raise AttributeError
     

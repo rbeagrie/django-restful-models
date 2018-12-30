@@ -32,7 +32,7 @@ XPath expressions, xml_models attempts to use lxml if it is available.  If not, 
 uses pyxml_xpath.  Better performance will be gained by installing lxml."""
 
 import re, datetime, time
-import xpath_twister as xpath
+from . import xpath_twister as xpath
 from common_models import *
 
 
@@ -43,7 +43,7 @@ class BaseField:
     """All fields must specify an xpath as a keyword arg in their constructor.  Fields may optionally specify a 
     default value using the default keyword arg."""
     def __init__(self, **kw):
-        if not kw.has_key('xpath'):
+        if 'xpath' not in kw:
             raise Exception('No XPath supplied for xml field')
         self.xpath = kw['xpath']
         self._default = kw.pop('default', None)
@@ -99,7 +99,7 @@ class DateField(BaseField):
                 value = utc_stripped[0]
             try:
                 return datetime.datetime.strptime(value, self.date_format)
-            except ValueError, msg:
+            except ValueError as msg:
                 if "%S" in self.date_format:
                     msg = str(msg)
                     rematch = re.match(r"unconverted data remains:"
@@ -183,11 +183,11 @@ class ModelBase(type):
         for field_name in xml_fields:
             setattr(cls, field_name, cls._get_xpath(field_name, attrs[field_name]))
             attrs[field_name]._name = field_name
-        if attrs.has_key("finders"):
+        if "finders" in attrs:
             setattr(cls, "objects", ModelManager(cls, attrs["finders"]))
         else:
             setattr(cls, "objects", ModelManager(cls, {}))
-        if attrs.has_key("headers"):
+        if "headers" in attrs:
             setattr(cls.objects, "headers", attrs["headers"])
     
     def _get_xpath(cls, field_name, field_impl):
@@ -197,8 +197,7 @@ XmlModelManager = ModelManager
 XmlModelQuery = ModelQuery
 
 
-class Model:
-    __metaclass__ = ModelBase
+class Model(metaclass=ModelBase):
     __doc__="""A model can be constructed with either an xml string, or an appropriate document supplied by
     the xpath_twister.domify() method.
     
@@ -227,9 +226,9 @@ class Model:
         if self._dom is None:
             try :
                 self._dom = xpath.domify(self._xml or '<x/>')
-            except Exception, e:
-                print self._xml
-                print str(e)
+            except Exception as e:
+                print(self._xml)
+                print(str(e))
                 raise e
         return self._dom
         
@@ -237,7 +236,7 @@ class Model:
         self._cache[field] = value
         
     def _parse_field(self, field):
-        if not self._cache.has_key(field):
+        if field not in self._cache:
             namespace = None
             if hasattr(self, 'namespace'):
                 namespace = self.namespace

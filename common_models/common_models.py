@@ -83,8 +83,8 @@ class ModelQuery(object):
 
     def _xml_fragments(self, xml):
         tree = et.iterparse(xml, ['start','end'])
-        tree.next()
-        evt, child = tree.next()
+        next(tree)
+        evt, child = next(tree)
         node_name = child.tag
         for event, elem in tree:
             if event == 'end' and elem.tag == node_name:

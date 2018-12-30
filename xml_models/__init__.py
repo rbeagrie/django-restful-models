@@ -1,2 +1,2 @@
-from xml_models import *
-import xpath_twister
+from .xml_models import *
+from . import xpath_twister

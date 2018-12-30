@@ -29,7 +29,7 @@ or implied, of the FreeBSD Project.
 import unittest, json
 from datetime import datetime
 from mock import patch
-from StringIO import StringIO
+from io import StringIO
 from json_models import *
 from common_models import *
 
@@ -92,13 +92,13 @@ class JsonModelsTest(unittest.TestCase):
         json_data = AttrDict(json.loads('{"kiddie":{"value":"Muppets rock"}}'))
         field = CharField(path="kiddie.value")
         response = field.parse(json_data)
-        self.assertEquals('Muppets rock', response)
+        self.assertEqual('Muppets rock', response)
         
     def test_int_returns_value_for_item_passed_in(self):
         json_data = AttrDict(json.loads('{"kiddie":{"value":30}}'))
         field = IntField(path="kiddie.value")
         response = field.parse(json_data)
-        self.assertEquals(30,response)
+        self.assertEqual(30,response)
 
     def test_int_field_raises_exception_when_non_int_value_is_parsed(self):
         json_data = AttrDict(json.loads('{"kiddie":{"value":"NaN"}}'))
@@ -114,13 +114,13 @@ class JsonModelsTest(unittest.TestCase):
         json_data = AttrDict(json.loads('{"kiddie":{"value":135}}'))
         field = DateField(path="kiddie.value")
         response = field.parse(json_data)
-        self.assertEquals(datetime(1970,1,1,0,0,0,135000), response)
+        self.assertEqual(datetime(1970,1,1,0,0,0,135000), response)
 
     def test_date_returns_None_for_item_not_in(self):
         json_data = AttrDict(json.loads('{"kiddie":{"value":null}}'))
         field = DateField(path="kiddie.value")
         response = field.parse(json_data)
-        self.assertEquals(None, response)
+        self.assertEqual(None, response)
 
     def test_bool_returns_false_for_item_passed_in_when_false(self):
         json_data = AttrDict(json.loads('{"kiddie":{"value":false}}'))
@@ -136,23 +136,23 @@ class JsonModelsTest(unittest.TestCase):
 
     def test_can_retrieve_attribute_value_from_json_model(self):
         my_model = MyModel('{"kiddie":{"value":"Rowlf"}}')
-        self.assertEquals('Rowlf', my_model.muppet_name)
+        self.assertEqual('Rowlf', my_model.muppet_name)
 
     def test_returns_none_if_non_required_attribute_not_in_json_and_no_default(self):
         my_model = MyModel('{"kiddie":{"valuefoo":"Rowlf"}}')
-        self.assertEquals(None, my_model.muppet_name)
+        self.assertEqual(None, my_model.muppet_name)
 
     def test_returns_default_if_non_required_attribute_not_in_json_and_default_specified(self):
         my_model = MyModel('{"kiddie":{"value":"Rowlf"}}')
-        self.assertEquals('frog', my_model.muppet_type)
+        self.assertEqual('frog', my_model.muppet_type)
 
     def test_returns_none_if_non_required_nested_attribute_not_in_json_and_no_default(self):
         my_model = MyModel('{"kiddie":{"valuefoo":"Rowlf"}}')
-        self.assertEquals(None, my_model.muppet_nose)
+        self.assertEqual(None, my_model.muppet_nose)
 
     def test_returns_default_if_non_required_nested_attribute_not_in_json_and_default_specified(self):
         my_model = MyModel('{"kiddie":{"value":"Rowlf"}}')
-        self.assertEquals('fuzzy', my_model.muppet_hair)
+        self.assertEqual('fuzzy', my_model.muppet_hair)
 
 
     def test_collection_returns_expected_number_of_correcty_typed_results(self):
@@ -170,44 +170,44 @@ class JsonModelsTest(unittest.TestCase):
 
     def test_collection_returns_user_model_types(self):
         my_model = MyModel('{"kiddie":{ "address": [{"number" :10,"street": "1st Ave. South", "city": "MuppetVille", "foobars" : ["foo","bar"]},{"number": 5, "street": "Mockingbird Lane", "city": "Bedrock"}]}}')
-        self.assertEquals(2,len(my_model.muppet_addresses))
+        self.assertEqual(2,len(my_model.muppet_addresses))
         address1 = my_model.muppet_addresses[0]
-        self.assertEquals(5, address1.number)
-        self.assertEquals('Mockingbird Lane', address1.street)
-        self.assertEquals('Bedrock', address1.city)
+        self.assertEqual(5, address1.number)
+        self.assertEqual('Mockingbird Lane', address1.street)
+        self.assertEqual('Bedrock', address1.city)
         address2 = my_model.muppet_addresses[1]
-        self.assertEquals(10, address2.number)
-        self.assertEquals('1st Ave. South', address2.street)
-        self.assertEquals('MuppetVille', address2.city)
-        self.assertEquals('foo', address2.foobars[0])
-        self.assertEquals('bar', address2.foobars[1])
+        self.assertEqual(10, address2.number)
+        self.assertEqual('1st Ave. South', address2.street)
+        self.assertEqual('MuppetVille', address2.city)
+        self.assertEqual('foo', address2.foobars[0])
+        self.assertEqual('bar', address2.foobars[1])
 
     def test_collection_orders_by_supplied_attribute_of_user_model_types(self):
         my_model = MyModel('{"kiddie":{ "address": [{"number" :10,"street": "1st Ave. South", "city": "MuppetVille", "foobars" : ["foo","bar"]},{"number": 5, "street": "Mockingbird Lane", "city": "Bedrock"}]}}')
-        self.assertEquals(2,len(my_model.muppet_addresses))
+        self.assertEqual(2,len(my_model.muppet_addresses))
         address1 = my_model.muppet_addresses[0]
-        self.assertEquals(5, address1.number)
+        self.assertEqual(5, address1.number)
         address2 = my_model.muppet_addresses[1]
-        self.assertEquals(10, address2.number)
+        self.assertEqual(10, address2.number)
 
     def test_collection_empty_collection_returned_when_json_not_found(self):
         my_model = MyModel('{"kiddie":{ "address": [{"number" :10,"street": "1st Ave. South", "city": "MuppetVille"},{"number": 5, "street": "Mockingbird Lane", "city": "Bedrock"}]}}')
-        self.assertEquals([], my_model.muppet_addresses[0].foobars)
+        self.assertEqual([], my_model.muppet_addresses[0].foobars)
         
     def test_can_set_charfield_to_model(self):
         my_model = MyModel('{"kiddie":{"muppet_name":"Gonzo"}}')
         my_model.muppet_name = "Kermit"
-        self.assertEquals("Kermit", my_model.muppet_name)
+        self.assertEqual("Kermit", my_model.muppet_name)
 
     def test_can_set_datefield_to_model(self):
         my_model = MyModel('{"kiddie":{"opened":123456}}')
         my_model.opened = datetime(1980,1,1,0,0,0,135000)
-        self.assertEquals(datetime(1980,1,1,0,0,0,135000), my_model.opened)
+        self.assertEqual(datetime(1980,1,1,0,0,0,135000), my_model.opened)
 
     def test_can_set_None_to_datefield(self):
         my_model = MyModel('{"kiddie":{"opened":123456}}')
         my_model.opened = None
-        self.assertEquals(None, my_model.opened)
+        self.assertEqual(None, my_model.opened)
 
     def test_collection_fields_can_be_appended_to(self):
         my_model = MyModel('{"kiddie":{"names": ["Kermit"]}}')
@@ -219,7 +219,7 @@ class JsonModelsTest(unittest.TestCase):
         try:
             MyModel.objects.filter(foo="bar").count()
             self.fail("expected NoRegisteredFinderError")
-        except NoRegisteredFinderError, e:
+        except NoRegisteredFinderError as e:
             self.assertTrue("foo" in str(e))
 
     def test_should_handle_models_with_no_data(self):
@@ -232,7 +232,7 @@ class JsonModelsTest(unittest.TestCase):
             content = StringIO('{"root": {"kiddie":{"value":"Gonzo", "address": [{ "number" : 10, "street": "1st Ave. South","city": "MuppetVille"},{"number":5,"street":"Mockingbird Lane","city": "Bedrock"}]}}}')
         mock_get.return_value = t()
         count = MyModel.objects.filter(muppet_name="baz").count()
-        self.assertEquals(1, count)
+        self.assertEqual(1, count)
         self.assertTrue(mock_get.called)
 
     @patch.object(rest_client.Client, "GET")
@@ -241,7 +241,7 @@ class JsonModelsTest(unittest.TestCase):
             content = StringIO('{"field1": "hello"}\n{"field1": "goodbye"}')
         mock_get.return_value = t()
         count = Simple.objects.filter(field1="baz").count()
-        self.assertEquals(2, count)
+        self.assertEqual(2, count)
         self.assertTrue(mock_get.called)
 
     @patch.object(rest_client.Client, "GET")
@@ -251,7 +251,7 @@ class JsonModelsTest(unittest.TestCase):
             response_code = 200
         mock_get.return_value = t()
         val = MyModel.objects.get(muppet_name="baz")
-        self.assertEquals("Gonzo", val.muppet_name)
+        self.assertEqual("Gonzo", val.muppet_name)
         self.assertTrue(mock_get.called)
 
     @patch.object(rest_client.Client, "GET")
@@ -261,9 +261,9 @@ class JsonModelsTest(unittest.TestCase):
             response_code = 200
         mock_get.return_value = t()
         val = Address.objects.get(street="foo", number="bar")
-        self.assertEquals("1st Ave. South", val.street)
+        self.assertEqual("1st Ave. South", val.street)
         self.assertTrue(mock_get.called)
-        self.assertEquals("http://address/number/bar/street/foo", mock_get.call_args[0][0])
+        self.assertEqual("http://address/number/bar/street/foo", mock_get.call_args[0][0])
 
 
     @patch.object(rest_client.Client, "GET")
@@ -273,9 +273,9 @@ class JsonModelsTest(unittest.TestCase):
             response_code = 200
         mock_get.return_value = t()
         val = Address.objects.get(street="foo", stringfield="bar")
-        self.assertEquals("1st Ave. South", val.street)
+        self.assertEqual("1st Ave. South", val.street)
         self.assertTrue(mock_get.called)
-        self.assertEquals("http://address/street/foo/stringfield/bar", mock_get.call_args[0][0])
+        self.assertEqual("http://address/street/foo/stringfield/bar", mock_get.call_args[0][0])
 
     @patch.object(rest_client.Client, "GET")
     def test_manager_raises_error_when_getting_for_a_registered_finder_and_repsonse_empty(self, mock_get):
@@ -286,7 +286,7 @@ class JsonModelsTest(unittest.TestCase):
         try:
             MyModel.objects.get(muppet_name="baz")
             self.fail("Expected DoesNotExist")
-        except DoesNotExist, e:
+        except DoesNotExist as e:
             self.assertTrue("DoesNotExist" in str(e))
 
     @patch.object(rest_client.Client, "GET")
@@ -298,7 +298,7 @@ class JsonModelsTest(unittest.TestCase):
         try:
             MyModel.objects.get(muppet_name="baz")
             self.fail("Expected DoesNotExist")
-        except DoesNotExist, e:
+        except DoesNotExist as e:
             self.assertTrue("DoesNotExist" in str(e))
 
     @patch.object(rest_client.Client, "GET")
@@ -310,8 +310,8 @@ class JsonModelsTest(unittest.TestCase):
         try:
             MyValidatingModel.objects.get(muppet_name="baz")
             self.fail("Expected ValidationError")
-        except ValidationError, e:
-            self.assertEquals("Invalid JSON", str(e))
+        except ValidationError as e:
+            self.assertEqual("Invalid JSON", str(e))
 
     @patch.object(rest_client.Client, "GET")
     def test_manager_raises_validation_error_on_load_when_validation_test_fails_given_bad_data(self, mock_get):
@@ -322,8 +322,8 @@ class JsonModelsTest(unittest.TestCase):
         try:
             MyValidatingModel.objects.get(muppet_name="baz")
             self.fail("Expected ValidationError")
-        except ValidationError, e:
-            self.assertEquals("What, no muppet name?", str(e))
+        except ValidationError as e:
+            self.assertEqual("What, no muppet name?", str(e))
 
     @patch.object(rest_client.Client, "GET")
     def test_manager_returns_iterator_for_collection_of_results(self, mock_get):
@@ -334,9 +334,9 @@ class JsonModelsTest(unittest.TestCase):
         results = []
         for mod in qry:
             results.append(mod)
-        self.assertEquals(2, len(results))
-        self.assertEquals("hello", results[0].field1)
-        self.assertEquals("goodbye", results[1].field1)
+        self.assertEqual(2, len(results))
+        self.assertEqual("hello", results[0].field1)
+        self.assertEqual("goodbye", results[1].field1)
 
     @patch.object(rest_client.Client, "GET")
     def test_manager_returns_iterator_for_collection_of_results_from_custom_query(self, mock_get):
@@ -347,9 +347,9 @@ class JsonModelsTest(unittest.TestCase):
         results = []
         for mod in qry:
             results.append(mod)
-        self.assertEquals(2, len(results))
-        self.assertEquals("hello", results[0].field1)
-        self.assertEquals("goodbye", results[1].field1)
+        self.assertEqual(2, len(results))
+        self.assertEqual("hello", results[0].field1)
+        self.assertEqual("goodbye", results[1].field1)
 
     @patch.object(rest_client.Client, "GET")
     def test_manager_returns_count_of_collection_of_results_when_len_is_called(self, mock_get):
@@ -357,7 +357,7 @@ class JsonModelsTest(unittest.TestCase):
             content = StringIO('{"field1": "hello"}\n{"field1": "goodbye"}')
         mock_get.return_value = t()
         qry = Simple.objects.filter(field1="baz")
-        self.assertEquals(2, len(qry))
+        self.assertEqual(2, len(qry))
 
     @stub(MyModel)
     def test_stub_allows_stubbing_return_values_for_queries(self):
@@ -368,7 +368,7 @@ class JsonModelsTest(unittest.TestCase):
         address1.foobars = ['foo','bar']
         MyModel.stub().get(muppet_name='Kermit').returns(muppet_name='Kermit', muppet_type='toad', muppet_names=['Trevor', 'Kyle'], muppet_addresses=[address1])
         result = MyModel.objects.get(muppet_name='Kermit')
-        self.assertEquals('toad', result.muppet_type)
+        self.assertEqual('toad', result.muppet_type)
         self.assertEqual(123, result.muppet_addresses[0].number)
         self.assertEqual('foo', result.muppet_addresses[0].foobars[0])
 
@@ -386,21 +386,21 @@ class JsonModelsTest(unittest.TestCase):
     def test_stub_allows_stubbing_filter_requests(self):
         MyModel.stub().filter(muppet_name='Kermit').returns(dict(muppet_name='Kermit', muppet_type='toad', muppet_names=['Trevor', 'Kyle']))
         result = MyModel.objects.filter(muppet_name='Kermit')
-        self.assertEquals(1, len(result))
-        self.assertEquals('toad',list(result)[0].muppet_type)
+        self.assertEqual(1, len(result))
+        self.assertEqual('toad',list(result)[0].muppet_type)
 
     @stub(MyModel)
     def test_stub_allows_stubbing_filter_custom_requests(self):
         MyModel.stub().filter_custom('http://anyurl.com').returns(dict(muppet_name='Kermit', muppet_type='toad', muppet_names=['Trevor', 'Kyle']))
         result = MyModel.objects.filter_custom('http://anyurl.com')
-        self.assertEquals(1, len(result))
-        self.assertEquals('toad',list(result)[0].muppet_type)
+        self.assertEqual(1, len(result))
+        self.assertEqual('toad',list(result)[0].muppet_type)
 
     def test_stub_allows_stubbing(self):
         @stub('MyModel')
         def test_something_to_do_with_mymodel(self):
             pass
-        self.assertEquals('test_something_to_do_with_mymodel', test_something_to_do_with_mymodel.__name__)
+        self.assertEqual('test_something_to_do_with_mymodel', test_something_to_do_with_mymodel.__name__)
 
 
 
@@ -417,10 +417,10 @@ class JsonModelsTest(unittest.TestCase):
 
     def test_headers_field_specified_on_model_is_added_to_the_query_manager(self):
         self.assertTrue(Simple.objects.headers != None)
-        self.assertEquals('user1', Simple.objects.headers['user'])
+        self.assertEqual('user1', Simple.objects.headers['user'])
         query = Simple.objects.filter(field1="Rhubarb")
         self.assertTrue(query.headers != None)
-        self.assertEquals('pwd1', query.headers['password'])
+        self.assertEqual('pwd1', query.headers['password'])
 
 if __name__=='__main__':
     unittest.main()

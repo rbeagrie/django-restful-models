@@ -33,7 +33,7 @@ from common_models import *
 
 class BaseField:
     def __init__(self, **kw):
-        if not kw.has_key('path'):
+        if 'path' not in kw:
             raise Exception('No Path supplied for json field')
         self.path = kw['path']
         self._default = kw.pop('default', None)
@@ -74,7 +74,7 @@ class DateField(BaseField):
         return milliseconds_from_epoch and datetime.utcfromtimestamp(milliseconds_from_epoch / 1000.0) or None
 
     def save(self,value):
-        return value and (long)((time.mktime(value.utctimetuple()) - time.timezone) * 1000.0 + value.microsecond / 1000.0) or None
+        return value and (int)((time.mktime(value.utctimetuple()) - time.timezone) * 1000.0 + value.microsecond / 1000.0) or None
 
 class Collection(BaseField):
     def __init__(self, field_type, order_by=None, **kw):
@@ -106,21 +106,19 @@ class ModelBase(type):
         for field_name in fields:
             setattr(cls, field_name, cls._get_path(field_name, attrs[field_name]))
             attrs[field_name]._name = field_name
-        if attrs.has_key("finders"):
+        if "finders" in attrs:
             setattr(cls, "objects", ModelManager(cls, attrs["finders"]))
         else:
             setattr(cls, "objects", ModelManager(cls, {}))
-        if attrs.has_key("headers"):
+        if "headers" in attrs:
             setattr(cls.objects, "headers", attrs["headers"])
 
     def _get_path(cls, field_name, field_impl):
         return property(fget=lambda cls: cls._parse_field(field_impl),fset=lambda cls, value : cls._set_field(field_impl, value) )
 
-class Model:
-    __metaclass__ = ModelBase
-
+class Model(metaclass=ModelBase):
     def __init__(self,json_data=None,**kw):
-        if kw.has_key('json'):
+        if 'json' in kw:
             self._json = AttrDict(kw['json'])
         else:
             try:

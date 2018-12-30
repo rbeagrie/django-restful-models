@@ -1,4 +1,4 @@
-from common_models import NoRegisteredFinderError, DoesNotExist
+from .common_models import NoRegisteredFinderError, DoesNotExist
 
 class ModelStubManager(object):
     """Handles what can be queried for, and acts as the entry point for querying.  There is an instance per model that is used

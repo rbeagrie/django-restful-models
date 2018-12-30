@@ -33,7 +33,7 @@ from xml_models.xml_models_stub import stub
 import xml_models.xpath_twister as xpath
 import rest_client
 from mock import patch
-from StringIO import StringIO
+from io import StringIO
 from stubserver import StubServer
 
 class Address(Model):
@@ -66,21 +66,21 @@ class XmlModelsTest(unittest.TestCase):
         xml = xpath.domify(xml_string)
         field = CharField(xpath='/root/kiddie/value')
         response = field.parse(xml, None)
-        self.assertEquals('Muppets rock', response) 
+        self.assertEqual('Muppets rock', response) 
         
     def test_char_field_reads_from_attribute(self):
         xml_string = '<Listing><Details><Bathrooms comment="Nice Baths">6</Bathrooms></Details></Listing>'
         xml = xpath.domify(xml_string)
         field = CharField(xpath='/Listing/Details/Bathrooms/@comment')
         response = field.parse(xml, None)
-        self.assertEquals('Nice Baths', response)
+        self.assertEqual('Nice Baths', response)
         
     def test_int_field_returns_xpathed_value_for_the_node_passed_in(self):
         xml_string = '<root><kiddie><value>123</value></kiddie></root>'
         xml = xpath.domify(xml_string)
         field = IntField(xpath='/root/kiddie/value')
         response = field.parse(xml, None)
-        self.assertEquals(123, response)
+        self.assertEqual(123, response)
         
     def test_int_field_raises_exception_when_non_int_value_is_parsed(self):
         xml_string = '<root><kiddie><value>NaN</value></kiddie></root>'
@@ -98,60 +98,60 @@ class XmlModelsTest(unittest.TestCase):
         xml = xpath.domify(xml_string)
         field = IntField(xpath='/Listing/@id')
         response = field.parse(xml, None)
-        self.assertEquals(123, response)
+        self.assertEqual(123, response)
     
     def test_date_field_returns_xpathed_value_for_the_node_passed_in(self):
         xml_string = '<root><kiddie><value>2008-06-21T10:36:12</value></kiddie></root>'
         xml = xpath.domify(xml_string)
         field = DateField(xpath='/root/kiddie/value')
         response = field.parse(xml,None)
-        date = datetime.datetime(2008,06,21,10,36,12)
-        self.assertEquals(date, response)
+        date = datetime.datetime(2008,0o6,21,10,36,12)
+        self.assertEqual(date, response)
             
     def test_date_field_strips_utc_offset_from_xpathed_value_for_the_node_passed_in(self):
         xml_string = '<root><kiddie><value>2008-06-21T10:36:12-06:00</value></kiddie></root>'
         xml = xpath.domify(xml_string)
         field = DateField(xpath='/root/kiddie/value')
         response = field.parse(xml,None)
-        date = datetime.datetime(2008,06,21,10,36,12)
-        self.assertEquals(date, response)
+        date = datetime.datetime(2008,0o6,21,10,36,12)
+        self.assertEqual(date, response)
         
     def test_date_field_returns_none_when_xpathed_value_for_the_node_is_none(self):
         xml_string = '<root><kiddie><value></value></kiddie></root>'
         xml = xpath.domify(xml_string)
         field = DateField(xpath='/root/kiddie/value')
         response = field.parse(xml, None)
-        self.assertEquals(None, response)
+        self.assertEqual(None, response)
     
     def test_bool_field_returns_false_when_xpathed_value_for_the_node_is_false(self):
         xml_string = '<root><kiddie1><value1>false</value1></kiddie1></root>'
         xml = xpath.domify(xml_string)
         field = BoolField(xpath='/root/kiddie1/value1')
         response = field.parse(xml, None)
-        self.assertEquals(False, response)
+        self.assertEqual(False, response)
 
     def test_bool_field_returns_true_when_xpathed_value_for_the_node_is_true(self):
         xml_string = '<root><kiddie1><value>true</value></kiddie1></root>'
         xml = xpath.domify(xml_string)
         field = BoolField(xpath='/root/kiddie1/value')
         response = field.parse(xml, None)
-        self.assertEquals(True, response)
+        self.assertEqual(True, response)
     
     def test_can_retrieve_attribute_value_from_xml_model(self):
         my_model = MyModel('<root><kiddie><value>Rowlf</value></kiddie></root>')
-        self.assertEquals('Rowlf', my_model.muppet_name)
+        self.assertEqual('Rowlf', my_model.muppet_name)
         
     def test_returns_none_if_non_required_attribute_not_in_xml_and_no_default(self):
         my_model = MyModel('<root><kiddie><valuefoo>Rolf</valuefoo></kiddie></root>')
-        self.assertEquals(None, my_model.muppet_name)
+        self.assertEqual(None, my_model.muppet_name)
     
     def test_returns_default_if_non_required_attribute_not_in_xml_and_default_specified(self):
         my_model = MyModel('<root><kiddie><value>Rowlf</value></kiddie></root>')
-        self.assertEquals('frog', my_model.muppet_type)
+        self.assertEqual('frog', my_model.muppet_type)
         
     def test_one_to_one_returns_sub_component(self):
         my_model = MasterModel(xml="<master><sub><name>fred</name></sub></master>")
-        self.assertEquals("fred", my_model.sub_model.name)
+        self.assertEqual("fred", my_model.sub_model.name)
         
     def test_collection_returns_expected_number_of_correcty_typed_results(self):
         my_model = MyModel('<root><kiddie><value>Rowlf</value><value>Kermit</value><value>Ms.Piggy</value></kiddie></root>')
@@ -167,39 +167,39 @@ class XmlModelsTest(unittest.TestCase):
         
     def test_collection_returns_user_model_types(self):
         my_model = MyModel('<root><kiddie><address><number>10</number><street>1st Ave. South</street><city>MuppetVille</city><foobar>foo</foobar><foobar>bar</foobar></address><address><number>5</number><street>Mockingbird Lane</street><city>Bedrock</city></address></kiddie></root>')
-        self.assertEquals(2,len(my_model.muppet_addresses))
+        self.assertEqual(2,len(my_model.muppet_addresses))
         address1 = my_model.muppet_addresses[0]
-        self.assertEquals(5, address1.number)
-        self.assertEquals('Mockingbird Lane', address1.street)
-        self.assertEquals('Bedrock', address1.city)
+        self.assertEqual(5, address1.number)
+        self.assertEqual('Mockingbird Lane', address1.street)
+        self.assertEqual('Bedrock', address1.city)
         address2 = my_model.muppet_addresses[1]
-        self.assertEquals(10, address2.number)
-        self.assertEquals('1st Ave. South', address2.street)
-        self.assertEquals('MuppetVille', address2.city)
-        self.assertEquals('foo', address2.foobars[0])
-        self.assertEquals('bar', address2.foobars[1])
+        self.assertEqual(10, address2.number)
+        self.assertEqual('1st Ave. South', address2.street)
+        self.assertEqual('MuppetVille', address2.city)
+        self.assertEqual('foo', address2.foobars[0])
+        self.assertEqual('bar', address2.foobars[1])
         
     def test_collection_orders_by_supplied_attribute_of_user_model_types(self):
         my_model = MyModel('<root><kiddie><address><number>10</number><street>1st Ave. South</street><city>MuppetVille</city><foobar>foo</foobar><foobar>bar</foobar></address><address><number>5</number><street>Mockingbird Lane</street><city>Bedrock</city></address></kiddie></root>')
-        self.assertEquals(2,len(my_model.muppet_addresses))
+        self.assertEqual(2,len(my_model.muppet_addresses))
         address1 = my_model.muppet_addresses[0]
-        self.assertEquals(5, address1.number)
+        self.assertEqual(5, address1.number)
         address2 = my_model.muppet_addresses[1]
-        self.assertEquals(10, address2.number)
+        self.assertEqual(10, address2.number)
         
     def test_collection_empty_collection_returned_when_xml_not_found(self):
         my_model = MyModel('<root><kiddie><address><number>10</number><street>1st Ave. South</street><city>MuppetVille</city></address><address><number>5</number><street>Mockingbird Lane</street><city>Bedrock</city></address></kiddie></root>')
-        self.assertEquals([], my_model.muppet_addresses[0].foobars)
+        self.assertEqual([], my_model.muppet_addresses[0].foobars)
         
     def test_use_a_default_namespace(self):
         nsModel = NsModel("<root xmlns='urn:test:namespace'><name>Finbar</name><age>47</age></root>")
-        self.assertEquals('Finbar', nsModel.name)
-        self.assertEquals(47, nsModel.age)
+        self.assertEqual('Finbar', nsModel.name)
+        self.assertEqual(47, nsModel.age)
         
     def test_model_fields_are_settable(self):
         my_model = MyModel('<root><kiddie><value>Gonzo</value><address><number>10</number><street>1st Ave. South</street><city>MuppetVille</city></address><address><number>5</number><street>Mockingbird Lane</street><city>Bedrock</city></address></kiddie></root>')
         my_model.muppet_name = 'Fozzie'
-        self.assertEquals('Fozzie', my_model.muppet_name)
+        self.assertEqual('Fozzie', my_model.muppet_name)
         
     def test_collection_fields_can_be_appended_to(self):
         my_model = MyModel('<root><kiddie><value>Gonzo</value><address><number>10</number><street>1st Ave. South</street><city>MuppetVille</city></address><address><number>5</number><street>Mockingbird Lane</street><city>Bedrock</city></address></kiddie></root>')
@@ -211,7 +211,7 @@ class XmlModelsTest(unittest.TestCase):
         try:
             MyModel.objects.filter(foo="bar").count()
             self.fail("expected NoRegisteredFinderError")
-        except NoRegisteredFinderError, e:
+        except NoRegisteredFinderError as e:
             self.assertTrue("foo" in str(e))
 
     def test_should_handle_models_with_no_data(self):
@@ -224,7 +224,7 @@ class XmlModelsTest(unittest.TestCase):
             content = StringIO("<elems><root><kiddie><value>Gonzo</value><address><number>10</number><street>1st Ave. South</street><city>MuppetVille</city></address><address><number>5</number><street>Mockingbird Lane</street><city>Bedrock</city></address></kiddie></root></elems>")
         mock_get.return_value = t()
         count = MyModel.objects.filter(muppet_name="baz").count()
-        self.assertEquals(1, count)
+        self.assertEqual(1, count)
         self.assertTrue(mock_get.called)
         
     @patch.object(rest_client.Client, "GET")
@@ -233,7 +233,7 @@ class XmlModelsTest(unittest.TestCase):
             content = StringIO("<elems><root><field1>hello</field1></root><root><field1>goodbye</field1></root></elems>")
         mock_get.return_value = t()
         count = Simple.objects.filter(field1="baz").count()
-        self.assertEquals(2, count)
+        self.assertEqual(2, count)
         self.assertTrue(mock_get.called)
         
     @patch.object(rest_client.Client, "GET")
@@ -243,7 +243,7 @@ class XmlModelsTest(unittest.TestCase):
             response_code = 200
         mock_get.return_value = t()
         val = MyModel.objects.get(muppet_name="baz")
-        self.assertEquals("Gonzo", val.muppet_name)
+        self.assertEqual("Gonzo", val.muppet_name)
         self.assertTrue(mock_get.called)
         
     @patch.object(rest_client.Client, "GET")
@@ -253,9 +253,9 @@ class XmlModelsTest(unittest.TestCase):
             response_code = 200
         mock_get.return_value = t()
         val = Address.objects.get(street="foo", number="bar")
-        self.assertEquals("1st Ave. South", val.street)
+        self.assertEqual("1st Ave. South", val.street)
         self.assertTrue(mock_get.called)
-        self.assertEquals("http://address/number/bar/street/foo", mock_get.call_args[0][0])
+        self.assertEqual("http://address/number/bar/street/foo", mock_get.call_args[0][0])
         
     @patch.object(rest_client.Client, "GET")
     def test_manager_queries_rest_service_accepting_strings_as_finder_keys(self, mock_get):
@@ -264,9 +264,9 @@ class XmlModelsTest(unittest.TestCase):
             response_code = 200
         mock_get.return_value = t()
         val = Address.objects.get(street="foo", stringfield="bar")
-        self.assertEquals("1st Ave. South", val.street)
+        self.assertEqual("1st Ave. South", val.street)
         self.assertTrue(mock_get.called)
-        self.assertEquals("http://address/street/foo/stringfield/bar", mock_get.call_args[0][0])
+        self.assertEqual("http://address/street/foo/stringfield/bar", mock_get.call_args[0][0])
     
 
     @patch.object(rest_client.Client, "GET")
@@ -278,7 +278,7 @@ class XmlModelsTest(unittest.TestCase):
         try:
             MyModel.objects.get(muppet_name="baz")
             self.fail("Expected DoesNotExist")
-        except DoesNotExist, e:    
+        except DoesNotExist as e:    
             self.assertTrue("DoesNotExist" in str(e))
     
     @patch.object(rest_client.Client, "GET")
@@ -290,7 +290,7 @@ class XmlModelsTest(unittest.TestCase):
         try:
             MyModel.objects.get(muppet_name="baz")
             self.fail("Expected DoesNotExist")
-        except DoesNotExist, e:
+        except DoesNotExist as e:
             self.assertTrue("DoesNotExist" in str(e))
             
     @patch.object(rest_client.Client, "GET")
@@ -302,8 +302,8 @@ class XmlModelsTest(unittest.TestCase):
         try:
             MyValidatingModel.objects.get(muppet_name="baz")
             self.fail("Expected XmlValidationError")
-        except XmlValidationError, e:
-            self.assertEquals("What, no muppet name?", str(e))
+        except XmlValidationError as e:
+            self.assertEqual("What, no muppet name?", str(e))
 
     @patch.object(rest_client.Client, "GET")
     def test_manager_returns_iterator_for_collection_of_results(self, mock_get):
@@ -314,9 +314,9 @@ class XmlModelsTest(unittest.TestCase):
         results = []
         for mod in qry:
             results.append(mod)
-        self.assertEquals(2, len(results))
-        self.assertEquals("hello", results[0].field1)
-        self.assertEquals("goodbye", results[1].field1)
+        self.assertEqual(2, len(results))
+        self.assertEqual("hello", results[0].field1)
+        self.assertEqual("goodbye", results[1].field1)
         
     @patch.object(rest_client.Client, "GET")
     def test_manager_returns_iterator_for_collection_of_results_from_custom_query(self, mock_get):
@@ -327,9 +327,9 @@ class XmlModelsTest(unittest.TestCase):
         results = []
         for mod in qry:
             results.append(mod)
-        self.assertEquals(2, len(results))
-        self.assertEquals("hello", results[0].field1)
-        self.assertEquals("goodbye", results[1].field1)
+        self.assertEqual(2, len(results))
+        self.assertEqual("hello", results[0].field1)
+        self.assertEqual("goodbye", results[1].field1)
 
     @patch.object(rest_client.Client, "GET")
     def test_manager_returns_count_of_collection_of_results_when_len_is_called(self, mock_get):
@@ -337,33 +337,33 @@ class XmlModelsTest(unittest.TestCase):
             content = StringIO("<elems><root><field1>hello</field1></root><root><field1>goodbye</field1></root></elems>")
         mock_get.return_value = t()
         qry = Simple.objects.filter(field1="baz")
-        self.assertEquals(2, len(qry))
+        self.assertEqual(2, len(qry))
         
     @stub(MyModel)
     def test_stub_allows_stubbing_return_values_for_queries(self):
         MyModel.stub().get(muppet_name='Kermit').returns(muppet_name='Kermit', muppet_type='toad', muppet_names=['Trevor', 'Kyle'])
         result = MyModel.objects.get(muppet_name='Kermit')
-        self.assertEquals('toad', result.muppet_type)
+        self.assertEqual('toad', result.muppet_type)
         
     @stub(MyModel)
     def test_stub_allows_stubbing_filter_requests(self):
         MyModel.stub().filter(muppet_name='Kermit').returns(dict(muppet_name='Kermit', muppet_type='toad', muppet_names=['Trevor', 'Kyle']))
         result = MyModel.objects.filter(muppet_name='Kermit')
-        self.assertEquals(1, len(result))
-        self.assertEquals('toad',list(result)[0].muppet_type)
+        self.assertEqual(1, len(result))
+        self.assertEqual('toad',list(result)[0].muppet_type)
     
     @stub(MyModel)
     def test_stub_allows_stubbing_filter_custom_requests(self):
         MyModel.stub().filter_custom('http://anyurl.com').returns(dict(muppet_name='Kermit', muppet_type='toad', muppet_names=['Trevor', 'Kyle']))
         result = MyModel.objects.filter_custom('http://anyurl.com')
-        self.assertEquals(1, len(result))
-        self.assertEquals('toad',list(result)[0].muppet_type)
+        self.assertEqual(1, len(result))
+        self.assertEqual('toad',list(result)[0].muppet_type)
         
     def test_stub_allows_stubbing(self):
         @stub('MyModel')
         def test_something_to_do_with_mymodel(self):
             pass
-        self.assertEquals('test_something_to_do_with_mymodel', test_something_to_do_with_mymodel.__name__)
+        self.assertEqual('test_something_to_do_with_mymodel', test_something_to_do_with_mymodel.__name__)
 
     @stub(MyModel)
     def test_stub_allows_stubbing_to_raise_exception(self):
@@ -378,10 +378,10 @@ class XmlModelsTest(unittest.TestCase):
 
     def test_headers_field_specified_on_model_is_added_to_the_query_manager(self):
         self.assertTrue(Simple.objects.headers != None)
-        self.assertEquals('user1', Simple.objects.headers['user'])
+        self.assertEqual('user1', Simple.objects.headers['user'])
         query = Simple.objects.filter(field1="Rhubarb")
         self.assertTrue(query.headers != None)
-        self.assertEquals('pwd1', query.headers['password'])
+        self.assertEqual('pwd1', query.headers['password'])
     
 class FunctionalTest(unittest.TestCase):
     def setUp(self):
@@ -395,7 +395,7 @@ class FunctionalTest(unittest.TestCase):
     def test_get_with_file_call(self):
         self.server.expect(method="GET", url="/address/\w+$").and_return(mime_type="text/xml", content="<address><number>12</number><street>Early Drive</street><city>Calgary</city></address>")
         address = Address.objects.get(city="Calgary")
-        self.assertEquals("Early Drive", address.street)
+        self.assertEqual("Early Drive", address.street)
 
 
 class MyValidatingModel(Model):

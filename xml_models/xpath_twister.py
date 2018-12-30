@@ -132,7 +132,7 @@ class XPathTest(unittest.TestCase):
         #execute
         val = _pydom_xpath(xml, "/foo/bar", None)
         #assert
-        self.assertEquals("abcd", val)
+        self.assertEqual("abcd", val)
         
     def test_xpath_returns_expected_element_value_from_unicode_xml_fragment(self):
         #setup
@@ -140,7 +140,7 @@ class XPathTest(unittest.TestCase):
         #execute
         val = _pydom_xpath(xml, "/foo/bar", None)
         #assert
-        self.assertEquals(u"abcd\xe9", val)
+        self.assertEqual(u"abcd\xe9", val)
     
     def test_xpath_returns_expected_attribute_value(self):
         #setup
@@ -148,7 +148,7 @@ class XPathTest(unittest.TestCase):
         #execute
         val = _pydom_xpath(xml, "/foo/baz/@name", None)
         #assert
-        self.assertEquals("Arthur", val)
+        self.assertEqual("Arthur", val)
         
     def test_xpath_returns_expected_attribute_value_from_unicode_xml_fragment(self):
         #setup
@@ -156,7 +156,7 @@ class XPathTest(unittest.TestCase):
         #execute
         val = _pydom_xpath(xml, "/foo/baz/@name", None)
         #assert
-        self.assertEquals(u"Arthur\xe9", val)
+        self.assertEqual(u"Arthur\xe9", val)
     
     def test_lxml_returns_expected_element_value(self):
         #setup
@@ -164,7 +164,7 @@ class XPathTest(unittest.TestCase):
         #execute
         val = _lxml_xpath(xml, "/foo/bar", None)
         #assert
-        self.assertEquals("abcd", val)
+        self.assertEqual("abcd", val)
     
     def test_lxml_returns_expected_element_value_from_unicode_xml_fragment(self):
         #setup
@@ -172,7 +172,7 @@ class XPathTest(unittest.TestCase):
         #execute
         val = _lxml_xpath(xml, "/foo/bar", None)
         #assert
-        self.assertEquals(u"abcd\xe9", val)
+        self.assertEqual(u"abcd\xe9", val)
     
     def test_lxml_returns_expected_attribute_value(self):
         #setup
@@ -180,7 +180,7 @@ class XPathTest(unittest.TestCase):
         #execute
         val = _lxml_xpath(xml, "/foo/baz/@name", None)
         #assert
-        self.assertEquals("Arthur", val)
+        self.assertEqual("Arthur", val)
 
     def test_lxml_returns_expected_attribute_value_from_unicode_xml_fragment(self):
         #setup
@@ -188,7 +188,7 @@ class XPathTest(unittest.TestCase):
         #execute
         val = _lxml_xpath(xml, "/foo/baz/@name", None)
         #assert
-        self.assertEquals(u"Arthur\xe9", val)
+        self.assertEqual(u"Arthur\xe9", val)
     
 if __name__=='__main__':
     unittest.main()
